@@ -23,8 +23,20 @@ public class ManagerUserService {
         return false;
     }
 
-    public ManagerUser register(ManagerUser user) {
+    public boolean register(ManagerUser user) {
+        if (managerUserRepository.existsByLoginNum(user.getLoginNum())) {
+            return false;
+        }
         user.setLoginPwd(passwordEncoder.encode(user.getLoginPwd()));
-        return managerUserRepository.save(user);
+        managerUserRepository.save(user);
+        return true;
+    }
+    
+    public ManagerUser findByLoginNumAndPwd(String loginNum, String loginPwd) {
+        ManagerUser user = managerUserRepository.findByLoginNum(loginNum);
+        if (user != null && passwordEncoder.matches(loginPwd, user.getLoginPwd())) {
+            return user;
+        }
+        return null;
     }
 }

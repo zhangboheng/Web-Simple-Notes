@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import backgroundImage from '../assets/images/signup.jpg';
 
 function Login() {
-  const [loginNum, setUsername] = useState('');
+  const [loginNum, setUsernum] = useState('');
   const [loginPwd, setPassword] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('success');
@@ -27,6 +27,7 @@ function Login() {
       const response = await login({ loginNum, loginPwd });
       if (response.data.message) {
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem('userInfo', JSON.stringify([response.data.userInfo]));
         setAlertMessage(response.data.showTips || 'Login successful');
         setAlertSeverity('success');
         setOpen(true);
@@ -89,7 +90,7 @@ function Login() {
             fullWidth
             margin="normal"
             value={loginNum}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => setUsernum(e.target.value)}
             required
           />
           <TextField
