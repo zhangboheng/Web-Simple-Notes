@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, IconButton } from '@mui/material';
+import { Box, Typography, TextField, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, Snackbar, Alert } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
+import DownloadIcon from '@mui/icons-material/Download';
 import LogoutIcon from '@mui/icons-material/Logout';
+import Grow from '@mui/material/Grow';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import 'react-mde/lib/styles/css/react-mde-all.css';
 import ReactMde from 'react-mde';
 import { getNotesByUserId, createNote, updateNote, deleteNote } from '../services/auth';
 import leftMove from '../assets/images/leftMove.png';
+import { saveAs } from 'file-saver';
 import rightMove from '../assets/images/rightMove.png';
 import Tooltip from '@mui/material/Tooltip';
 
@@ -20,6 +23,8 @@ function NotesPage() {
   const [title, setTitle] = useState('');
   const [selectedTab, setSelectedTab] = useState('write');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   useEffect(() => {
     const userInfo = localStorage.getItem('userInfo');
@@ -61,13 +66,17 @@ function NotesPage() {
           const updatedNotes = notes.map(note => (note.noteId === selectedNote.noteId ? response.data : note));
           setNotes(updatedNotes);
           setSelectedNote(updatedNotes);
-          console.log('Note updated:', response.data); // Debugging log
+          setSnackbarOpen(true);
         })
         .catch(error => console.error('Error updating note:', error));
     }
   };
 
   const handleDeleteNote = () => {
+    setOpenDialog(true);
+  };
+
+  const confirmDeleteNote = () => {
     if (selectedNote) {
       deleteNote(selectedNote.noteId)
         .then(() => {
@@ -77,6 +86,11 @@ function NotesPage() {
         })
         .catch(error => console.error('Error deleting note:', error));
     }
+    setOpenDialog(false);
+  };
+
+  const cancelDeleteNote = () => {
+    setOpenDialog(false);
   };
 
   const handleLogout = () => {
@@ -86,6 +100,15 @@ function NotesPage() {
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleExportMarkdown = () => {
+    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+    saveAs(blob, `${title || 'note'}.md`);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -116,24 +139,36 @@ function NotesPage() {
               </IconButton>
             </Tooltip>
           </Box>
-          {notes.map((note, index) => (
-            <Box
-              key={note.noteId}
-              sx={{
-                marginBottom: 1,
-                cursor: 'pointer',
-                padding: 2,
-                wordWrap: 'break-word',
-                wordBreak: 'break-all',
-                whiteSpace: 'normal',
-                color: note.noteId === selectedNote?.noteId ? '#000' : '#fff',
-                backgroundColor: note.noteId === selectedNote?.noteId ? '#f0f0f0' : 'transparent',
-              }}
-              onClick={() => handleSelectNote(note)}
-            >
-              {note.title}
-            </Box>
-          ))}
+          <Box sx={{
+            flexGrow: 1,
+            overflowY: 'auto',
+            paddingBottom: 2,
+            height: 'calc(100% - 120px)',
+            '&::-webkit-scrollbar': {
+              display: 'none',
+            },
+            '-ms-overflow-style': 'none',
+            'scrollbar-width': 'none',
+          }}>
+            {notes.map((note, index) => (
+              <Box
+                key={note.noteId}
+                sx={{
+                  marginBottom: 1,
+                  cursor: 'pointer',
+                  padding: 2,
+                  wordWrap: 'break-word',
+                  wordBreak: 'break-all',
+                  whiteSpace: 'normal',
+                  color: note.noteId === selectedNote?.noteId ? '#000' : '#fff',
+                  backgroundColor: note.noteId === selectedNote?.noteId ? '#f0f0f0' : 'transparent',
+                }}
+                onClick={() => handleSelectNote(note)}
+              >
+                {note.title}
+              </Box>
+            ))}
+          </Box>
         </Box>
       )}
 
@@ -147,22 +182,31 @@ function NotesPage() {
       }}>
         {selectedNote ? (
           <>
-            <Box sx={{ marginBottom: 2, width: '100%', display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-              <Tooltip title="Save Note">
-                <IconButton color="info" onClick={handleSaveNote}>
-                  <SaveIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Delete Note">
-                <IconButton color="error" onClick={handleDeleteNote}>
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Logout">
-                <IconButton color='info' onClick={handleLogout}>
-                  <LogoutIcon />
-                </IconButton>
-              </Tooltip>
+            <Box sx={{ marginBottom: 2, width: '100%', display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Tooltip title="Save Note">
+                  <IconButton color="info" onClick={handleSaveNote}>
+                    <SaveIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Delete Note">
+                  <IconButton color="error" onClick={handleDeleteNote}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Download Markdown">
+                  <IconButton color="primary" onClick={handleExportMarkdown}>
+                    <DownloadIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Box>
+                <Tooltip title="Logout">
+                  <IconButton color='info' onClick={handleLogout}>
+                    <LogoutIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
             </Box >
             <TextField
               label="Title"
@@ -193,6 +237,36 @@ function NotesPage() {
                 heightUnits=""
               />
             </Box>
+            <Dialog
+              open={openDialog}
+              onClose={cancelDeleteNote}
+            >
+              <DialogTitle>{"Confirm Delete"}</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Do you want to delete this note?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={cancelDeleteNote} color="primary">
+                  Cancel
+                </Button>
+                <Button onClick={confirmDeleteNote} color="error" autoFocus>
+                  Sure
+                </Button>
+              </DialogActions>
+            </Dialog>
+            <Snackbar
+              open={snackbarOpen}
+              autoHideDuration={3000}
+              onClose={handleCloseSnackbar}
+              TransitionComponent={Grow}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+              <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+                Save Success
+              </Alert>
+            </Snackbar>
           </>
         ) : (
           <Typography variant="h6" sx={{ textAlign: 'center' }}>Please Choose A Note or Add One</Typography>
