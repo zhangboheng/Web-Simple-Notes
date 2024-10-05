@@ -32,7 +32,7 @@ public class NoteController {
     @GetMapping("/{noteId}")
     public Note getNoteById(@PathVariable Integer noteId) {
         return noteService.getNoteById(noteId)
-                .orElseThrow(() -> new IllegalArgumentException("笔记不存在"));
+                .orElseThrow(() -> new IllegalArgumentException("Note not found"));
     }
 
     // Update a note

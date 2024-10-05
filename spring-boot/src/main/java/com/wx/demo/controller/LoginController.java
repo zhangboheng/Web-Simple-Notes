@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,32 +23,33 @@ public class LoginController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestParam String loginNum, @RequestParam String loginPwd) {
-        boolean success = managerUserService.login(loginNum, loginPwd);
         ManagerUser user = managerUserService.findByLoginNumAndPwd(loginNum, loginPwd);
         Map<String, Object> response = new HashMap<>();
-        if (success) {
+
+        if (user != null) {
             String token = jwtUtil.generateToken(loginNum);
             response.put("message", true);
             response.put("token", token);
-            response.put("userInfo", Map.of(
-                "id", user.getId(),
-                "loginName", user.getLoginName(),
-                "loginNum", user.getLoginNum(),
-                "remarks", user.getRemarks()
-            ));
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("id", user.getId());
+            userInfo.put("loginName", user.getLoginName());
+            userInfo.put("loginNum", user.getLoginNum());
+            userInfo.put("remarks", user.getRemarks());
+    
+            response.put("userInfo", userInfo);
             response.put("showTips", "Login Success");
             return ResponseEntity.ok(response);
         } else {
             response.put("message", false);
-            response.put("showTips", "Login Failed");
-            return ResponseEntity.ok(response);
+            response.put("showTips", "Account or Password Error");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestParam String loginName, @RequestParam String loginNum,
             @RequestParam String loginPwd, @RequestParam(required = false) String remarks) {
-        
+
         Map<String, Object> response = new HashMap<>();
         ManagerUser user = new ManagerUser();
         user.setLoginName(loginName);
@@ -60,7 +62,7 @@ public class LoginController {
             response.put("message", true);
             response.put("showTips", "Register Success");
             return ResponseEntity.ok(response);
-        }else{
+        } else {
             response.put("message", false);
             response.put("showTips", "Register Failed, LoginNum already exists");
             return ResponseEntity.ok(response);

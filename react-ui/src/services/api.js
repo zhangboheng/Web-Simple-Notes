@@ -12,7 +12,7 @@ instance.interceptors.request.use(
   (config) => {
     if (config.method === 'get') {
       config.headers['Content-Type'] = 'application/json';
-    } else if (config.method === 'post') {
+    } else if (config.method === 'post' || config.method === 'put') {
       config.headers['Content-Type'] = 'application/x-www-form-urlencoded';
       config.data = qs.stringify(config.data);
     } else {

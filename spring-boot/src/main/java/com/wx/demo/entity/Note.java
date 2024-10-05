@@ -3,6 +3,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 @Table(name = "notes")
 @Data
@@ -13,6 +15,7 @@ public class Note {
     @Column(name = "note_id")
     private Integer noteId;
 
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private ManagerUser user;
@@ -32,5 +35,5 @@ public class Note {
     @PreUpdate
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
-    }    
+    }
 }

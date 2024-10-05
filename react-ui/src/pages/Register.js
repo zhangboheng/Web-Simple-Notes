@@ -92,7 +92,7 @@ function Register() {
             required
           />
           <TextField
-            label="Username"
+            label="Account"
             variant="outlined"
             fullWidth
             margin="normal"

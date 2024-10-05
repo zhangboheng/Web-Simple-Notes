@@ -38,7 +38,6 @@ CREATE TABLE `manageruser` (
 
 LOCK TABLES `manageruser` WRITE;
 /*!40000 ALTER TABLE `manageruser` DISABLE KEYS */;
-INSERT INTO `manageruser` VALUES (1,'Administrator','admin','123456','SU'),(2,'伯衡君','zhangboheng','$2a$10$2CueNEg/HMM9bpwoOkxGI.g7gdjP2q6z07LQLJSv9lnZfyf.zsBL6','测试'),(3,'shangmeiqi','shabby','$2a$10$pe4ScWhH4LlP8gvpX5uDvexDq3ssdF0iAYaViK3TpfnrlerPhYKaW',NULL),(4,'jasmin','holiday','$2a$10$GBY/eNEidnE6/GlIkz1L4.VFkvqbAj0NBwZLXCzqA0C.P6p5j8NEK',NULL);
 /*!40000 ALTER TABLE `manageruser` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -59,7 +58,7 @@ CREATE TABLE `notes` (
   PRIMARY KEY (`note_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `notes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `manageruser` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -88,4 +87,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-10-03 18:35:59
+-- Dump completed on 2024-10-05 17:59:49

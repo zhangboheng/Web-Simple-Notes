@@ -10,6 +10,8 @@ import jakarta.persistence.GenerationType;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 
@@ -34,6 +36,7 @@ public class ManagerUser {
     @Column(name = "remarks")
     private String remarks;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Note> notes;
 }

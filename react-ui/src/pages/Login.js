@@ -32,7 +32,7 @@ function Login() {
         setAlertSeverity('success');
         setOpen(true);
         setTimeout(() => {
-          navigate('/');
+          navigate('/notes');
         }, 2000);
       } else {
         setAlertMessage(response.data.showTips || 'Login failed');
@@ -85,7 +85,7 @@ function Login() {
         </Typography>
         <form onSubmit={handleSubmit}>
           <TextField
-            label="Username"
+            label="Account"
             variant="outlined"
             fullWidth
             margin="normal"
