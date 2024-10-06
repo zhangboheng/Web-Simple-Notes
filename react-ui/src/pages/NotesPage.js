@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, Snackbar, Alert } from '@mui/material';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
+import { Box, Typography, TextField, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, Snackbar, Alert, useTheme } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
@@ -15,8 +15,12 @@ import leftMove from '../assets/images/leftMove.png';
 import { saveAs } from 'file-saver';
 import rightMove from '../assets/images/rightMove.png';
 import Tooltip from '@mui/material/Tooltip';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import '../assets/css/notepage.css'
 
-function NotesPage() {
+function NotesPage({ colorMode }) {
+  const theme = useTheme();
   const [notes, setNotes] = useState([]);
   const [selectedNote, setSelectedNote] = useState(null);
   const [markdownContent, setMarkdownContent] = useState('');
@@ -39,10 +43,42 @@ function NotesPage() {
     }
   }, []);
 
+  useLayoutEffect(() => {
+    const updateMdeToolbarColor = () => {
+      const toolbar = document.querySelector('.mde-header');
+      if (toolbar) {
+        if (theme.palette.mode === 'light') {
+          toolbar.classList.add('light-mode-toolbar');
+          toolbar.classList.remove('dark-mode-toolbar');
+        } else {
+          toolbar.classList.add('dark-mode-toolbar');
+          toolbar.classList.remove('light-mode-toolbar');
+        }
+      }
+    };
+
+    updateMdeToolbarColor();
+  }, [theme.palette.mode, selectedNote]);
+
   const handleSelectNote = (note) => {
     setSelectedNote(note);
     setTitle(note.title);
     setMarkdownContent(note.content);
+
+    updateMdeToolbarColor();
+  };
+
+  const updateMdeToolbarColor = () => {
+    const toolbar = document.querySelector('.mde-header');
+    if (toolbar) {
+      if (theme.palette.mode === 'light') {
+        toolbar.classList.add('light-mode-toolbar');
+        toolbar.classList.remove('dark-mode-toolbar');
+      } else {
+        toolbar.classList.add('dark-mode-toolbar');
+        toolbar.classList.remove('light-mode-toolbar');
+      }
+    }
   };
 
   const handleAddNote = () => {
@@ -54,7 +90,8 @@ function NotesPage() {
         const createdNote = response.data;
         setNotes([...notes, response.data]);
         setSelectedNote(createdNote);
-        console.log('New note added:', response.data); // Debugging log
+        setTitle(newNote.title);
+        setMarkdownContent('');
       })
       .catch(error => console.error('Error creating note:', error));
   };
@@ -81,8 +118,9 @@ function NotesPage() {
       deleteNote(selectedNote.noteId)
         .then(() => {
           setNotes(notes.filter(note => note.noteId !== selectedNote.noteId));
-          setSelectedNote(null); // Reset selected note
-          console.log('Note deleted:', selectedNote.noteId); // Debugging log
+          setSelectedNote(null);
+          setTitle('New Note');
+          setMarkdownContent('');
         })
         .catch(error => console.error('Error deleting note:', error));
     }
@@ -173,7 +211,7 @@ function NotesPage() {
       )}
 
       <Box sx={{
-        width: isSidebarOpen ? '80%' : 'calc(99% - 18px)',
+        width: isSidebarOpen ? '80%' : '100%',
         padding: 2,
         display: 'flex',
         flexDirection: 'column',
@@ -184,6 +222,11 @@ function NotesPage() {
           <>
             <Box sx={{ marginBottom: 2, width: '100%', display: 'flex', justifyContent: 'space-between', gap: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Tooltip title="Toggle Mode">
+                  <IconButton onClick={colorMode.toggleColorMode}>
+                    {theme.palette.mode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title="Save Note">
                   <IconButton color="info" onClick={handleSaveNote}>
                     <SaveIcon />
@@ -214,9 +257,18 @@ function NotesPage() {
               fullWidth
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              sx={{ marginBottom: 2 }}
+              sx={{
+                marginBottom: 2,
+              }}
             />
-            <Box sx={{ width: '100%', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{
+              width: '100%',
+              flexGrow: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#121212',
+              color: theme.palette.mode === 'light' ? '#000' : '#fff',
+            }}>
               <ReactMde
                 value={markdownContent}
                 onChange={setMarkdownContent}
@@ -233,7 +285,35 @@ function NotesPage() {
                     </Box>
                   )
                 }
-                initialEditorHeight="calc(100vh - 220px)"
+                childProps={{
+                  writeButton: {
+                    style: {
+                      backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#121212',
+                      color: theme.palette.mode === 'light' ? '#000' : '#fff',
+                    }
+                  },
+                  previewButton: {
+                    style: {
+                      backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#121212',
+                      color: theme.palette.mode === 'light' ? '#000' : '#fff',
+                    }
+                  },
+                  commandButtons: {
+                    style: {
+                      backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#121212',
+                      color: theme.palette.mode === 'light' ? '#000' : '#fff',
+                    }
+                  },
+                  textArea: {
+                    style: {
+                      backgroundColor: theme.palette.mode === 'light' ? '#fff' : '#121212',
+                      color: theme.palette.mode === 'light' ? '#000' : '#fff',
+                      overflow: 'auto',
+                      maxWidth: '100%',
+                      height: 'calc(100vh - 220px)',
+                    },
+                  },
+                }}
                 heightUnits=""
               />
             </Box>
