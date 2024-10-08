@@ -183,10 +183,10 @@ function NotesPage({ colorMode }) {
       {isSidebarOpen && (
         <Box sx={{ width: '20%', borderRight: '1px solid #ccc', backgroundColor: '#000000' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 2, flexShrink: 0, minWidth: 0 }}>
-            <Typography variant="h5" sx={{ marginBottom: 2, color: 'white', whiteSpace: 'nowrap' }}>Note List</Typography>
+            <Typography variant="h5" sx={{ marginBottom: 0, color: 'white', whiteSpace: 'nowrap' }}>Note List</Typography>
             <Tooltip title="Add Note">
               <IconButton variant="contained" onClick={handleAddNote} sx={{
-                marginBottom: 2,
+                marginBottom: 0,
                 backgroundColor: 'white',
                 color: 'black',
                 '&:hover': {
@@ -198,15 +198,15 @@ function NotesPage({ colorMode }) {
               </IconButton>
             </Tooltip>
           </Box>
-          <Box sx={{ padding: 2 }}>
+          <Box sx={{ padding: 1 }}>
           <TextField
             label="Search Notes"
             variant="outlined"
             fullWidth
             autoFocus={true}
             value={keyword}
-
             color="secondary"
+            margin='none'
             onChange={(e) => setKeyword(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }} // Search on Enter key
             InputProps={{
@@ -216,11 +216,6 @@ function NotesPage({ colorMode }) {
                 </IconButton>
               ),
               style: { color: '#fff' }
-            }}
-            slotProps={{
-              InputLabelProps: {
-                style: { color: '#fff' }
-              }
             }}
             InputLabelProps={{
               style: { color: '#fff' } // Customize the label color (optional)

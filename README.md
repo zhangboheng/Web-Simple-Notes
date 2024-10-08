@@ -15,7 +15,7 @@ Web Simple Notes is a sleek, user-friendly web application designed to streamlin
 - **Data Persistence**: Your notes are stored securely on the server, ensuring they are backed up and accessible from anywhere.
 
 ### Screenshots
-![Web Simple Notes](./screenshots/surface.jpg)
+![Web Simple Notes](./screenshots/surface.png)
 
 ### Getting Started
 1. Clone the repository:
