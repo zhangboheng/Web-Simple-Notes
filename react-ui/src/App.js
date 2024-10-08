@@ -22,6 +22,12 @@ function App() {
       createTheme({
         palette: {
           mode,
+          primary: {
+            main: '#000000',
+          },
+          secondary: {
+            main: '#ffffff',
+          },
         },
       }),
     [mode]

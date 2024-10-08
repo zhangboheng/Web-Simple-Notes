@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.38, for macos14 (arm64)
 --
--- Host: 127.0.0.1    Database: moneyspeed
+-- Host: 127.0.0.1    Database: notestable
 -- ------------------------------------------------------
 -- Server version	8.0.39
 
@@ -71,11 +71,11 @@ LOCK TABLES `notes` WRITE;
 UNLOCK TABLES;
 
 --
--- Dumping events for database 'moneyspeed'
+-- Dumping events for database 'notestable'
 --
 
 --
--- Dumping routines for database 'moneyspeed'
+-- Dumping routines for database 'notestable'
 --
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

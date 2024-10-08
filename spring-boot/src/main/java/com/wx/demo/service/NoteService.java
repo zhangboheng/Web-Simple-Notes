@@ -58,5 +58,9 @@ public class NoteService {
     public void deleteNote(Integer noteId) {
         noteRepository.deleteById(noteId);
     }
+
+    public List<Note> searchNotesByKeyword(String keyword) {
+        return noteRepository.findByTitleContainingOrContentContaining(keyword, keyword);
+    }
 }
 

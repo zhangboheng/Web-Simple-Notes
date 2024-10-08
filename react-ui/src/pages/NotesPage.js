@@ -3,14 +3,17 @@ import { Box, Typography, TextField, IconButton, Dialog, DialogActions, DialogCo
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
 import LogoutIcon from '@mui/icons-material/Logout';
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import Grow from '@mui/material/Grow';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import 'react-mde/lib/styles/css/react-mde-all.css';
 import ReactMde from 'react-mde';
-import { getNotesByUserId, createNote, updateNote, deleteNote } from '../services/auth';
+import { getNotesByUserId, createNote, updateNote, deleteNote, searchNotes } from '../services/auth';
 import leftMove from '../assets/images/leftMove.png';
 import { saveAs } from 'file-saver';
 import rightMove from '../assets/images/rightMove.png';
@@ -22,6 +25,7 @@ import '../assets/css/notepage.css'
 function NotesPage({ colorMode }) {
   const theme = useTheme();
   const [notes, setNotes] = useState([]);
+  const [keyword, setKeyword] = useState('');
   const [selectedNote, setSelectedNote] = useState(null);
   const [markdownContent, setMarkdownContent] = useState('');
   const [title, setTitle] = useState('');
@@ -29,6 +33,7 @@ function NotesPage({ colorMode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const userInfo = localStorage.getItem('userInfo');
@@ -37,7 +42,6 @@ function NotesPage({ colorMode }) {
       getNotesByUserId(userId)
         .then(response => {
           setNotes(response.data);
-          console.log('Notes fetched:', response.data);
         })
         .catch(error => console.error('Error fetching notes:', error));
     }
@@ -59,6 +63,15 @@ function NotesPage({ colorMode }) {
 
     updateMdeToolbarColor();
   }, [theme.palette.mode, selectedNote]);
+
+  const handleToggleFullscreen = () => {
+    if (!isFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+    setIsFullscreen(!isFullscreen);
+  };
 
   const handleSelectNote = (note) => {
     setSelectedNote(note);
@@ -94,6 +107,14 @@ function NotesPage({ colorMode }) {
         setMarkdownContent('');
       })
       .catch(error => console.error('Error creating note:', error));
+  };
+
+  const handleSearch = () => {
+    searchNotes(keyword.trim()) // Call the backend search API
+    .then(response => {
+      setNotes(response.data);
+    })
+    .catch(error => console.error('Error searching notes:', error));
   };
 
   const handleSaveNote = () => {
@@ -177,6 +198,48 @@ function NotesPage({ colorMode }) {
               </IconButton>
             </Tooltip>
           </Box>
+          <Box sx={{ padding: 2 }}>
+          <TextField
+            label="Search Notes"
+            variant="outlined"
+            fullWidth
+            autoFocus={true}
+            value={keyword}
+
+            color="secondary"
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }} // Search on Enter key
+            InputProps={{
+              endAdornment: (
+                <IconButton color='secondary' onClick={handleSearch}>
+                  <SearchIcon />
+                </IconButton>
+              ),
+              style: { color: '#fff' }
+            }}
+            slotProps={{
+              InputLabelProps: {
+                style: { color: '#fff' }
+              }
+            }}
+            InputLabelProps={{
+              style: { color: '#fff' } // Customize the label color (optional)
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': {
+                  borderColor: '#CCCCCC', // Default border color
+                },
+                '&:hover fieldset': {
+                  borderColor: '#FFFFFF', // Border color when hovered
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#FFFFFF', // Border color when focused
+                },
+              },
+            }}
+          />
+        </Box>
           <Box sx={{
             flexGrow: 1,
             overflowY: 'auto',
@@ -222,8 +285,13 @@ function NotesPage({ colorMode }) {
           <>
             <Box sx={{ marginBottom: 2, width: '100%', display: 'flex', justifyContent: 'space-between', gap: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Tooltip title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}>
+                  <IconButton onClick={handleToggleFullscreen}>
+                    {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title="Toggle Mode">
-                  <IconButton onClick={colorMode.toggleColorMode}>
+                  <IconButton color="warning" onClick={colorMode.toggleColorMode}>
                     {theme.palette.mode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
                   </IconButton>
                 </Tooltip>
@@ -238,7 +306,7 @@ function NotesPage({ colorMode }) {
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Download Markdown">
-                  <IconButton color="primary" onClick={handleExportMarkdown}>
+                  <IconButton color="success" onClick={handleExportMarkdown}>
                     <DownloadIcon />
                   </IconButton>
                 </Tooltip>

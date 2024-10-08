@@ -17,8 +17,8 @@ public class NoteController {
     // Create a new note
     @PostMapping
     public Note createNote(@RequestParam Long userId,
-                           @RequestParam String title,
-                           @RequestParam String content) {
+            @RequestParam String title,
+            @RequestParam String content) {
         return noteService.createNote(userId, title, content);
     }
 
@@ -38,8 +38,8 @@ public class NoteController {
     // Update a note
     @PutMapping("/{noteId}")
     public Note updateNote(@PathVariable Integer noteId,
-                           @RequestParam String title,
-                           @RequestParam String content) {
+            @RequestParam String title,
+            @RequestParam String content) {
         return noteService.updateNote(noteId, title, content);
     }
 
@@ -47,5 +47,11 @@ public class NoteController {
     @DeleteMapping("/{noteId}")
     public void deleteNote(@PathVariable Integer noteId) {
         noteService.deleteNote(noteId);
+    }
+
+    // Search notes by title or content
+    @GetMapping("/search")
+    public List<Note> searchNotes(@RequestParam String keyword) {
+        return noteService.searchNotesByKeyword(keyword);
     }
 }
