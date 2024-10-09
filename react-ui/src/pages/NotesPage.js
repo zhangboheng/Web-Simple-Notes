@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { Box, Typography, TextField, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, Snackbar, Alert, useTheme } from '@mui/material';
+import { Box, Typography, TextField, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, Snackbar, Alert, useTheme, Slider } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
@@ -8,12 +8,13 @@ import DownloadIcon from '@mui/icons-material/Download';
 import LogoutIcon from '@mui/icons-material/Logout';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import HistoryIcon from '@mui/icons-material/History';
 import Grow from '@mui/material/Grow';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import 'react-mde/lib/styles/css/react-mde-all.css';
 import ReactMde from 'react-mde';
-import { getNotesByUserId, createNote, updateNote, deleteNote, searchNotes } from '../services/auth';
+import { getNotesByUserId, createNote, updateNote, deleteNote, searchNotes, getNoteHistory } from '../services/auth';
 import leftMove from '../assets/images/leftMove.png';
 import { saveAs } from 'file-saver';
 import rightMove from '../assets/images/rightMove.png';
@@ -34,6 +35,9 @@ function NotesPage({ colorMode }) {
   const [openDialog, setOpenDialog] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [noteHistory, setNoteHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+
 
   useEffect(() => {
     const userInfo = localStorage.getItem('userInfo');
@@ -46,6 +50,18 @@ function NotesPage({ colorMode }) {
         .catch(error => console.error('Error fetching notes:', error));
     }
   }, []);
+
+  // Fetch note history when a note is selected
+  useEffect(() => {
+    if (selectedNote) {
+      getNoteHistory(selectedNote.noteId)
+        .then(response => {
+          setNoteHistory(response.data); // Save history data
+          setHistoryIndex(0); // Reset the slider to the latest history
+        })
+        .catch(error => console.error('Error fetching note history:', error));
+    }
+  }, [selectedNote]);
 
   useLayoutEffect(() => {
     const updateMdeToolbarColor = () => {
@@ -111,19 +127,20 @@ function NotesPage({ colorMode }) {
 
   const handleSearch = () => {
     searchNotes(keyword.trim()) // Call the backend search API
-    .then(response => {
-      setNotes(response.data);
-    })
-    .catch(error => console.error('Error searching notes:', error));
+      .then(response => {
+        setNotes(response.data);
+      })
+      .catch(error => console.error('Error searching notes:', error));
   };
 
   const handleSaveNote = () => {
     if (selectedNote) {
       updateNote(selectedNote.noteId, { title: title, content: markdownContent })
         .then(response => {
+          const updatedNote = response.data; // Get the updated note
           const updatedNotes = notes.map(note => (note.noteId === selectedNote.noteId ? response.data : note));
-          setNotes(updatedNotes);
-          setSelectedNote(updatedNotes);
+          setNotes(updatedNotes); // Update the list of notes
+          setSelectedNote(updatedNote); // Set the updated note as selected
           setSnackbarOpen(true);
         })
         .catch(error => console.error('Error updating note:', error));
@@ -161,9 +178,19 @@ function NotesPage({ colorMode }) {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  // Markdown File Export
   const handleExportMarkdown = () => {
     const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
     saveAs(blob, `${title || 'note'}.md`);
+  };
+
+  // Handle slider change to show history content
+  const handleSliderChange = (event, newValue) => {
+    setHistoryIndex(newValue);
+    if (noteHistory[newValue]) {
+      setTitle(noteHistory[newValue].title); // Update title based on history
+      setMarkdownContent(noteHistory[newValue].content); // Update content based on history
+    }
   };
 
   const handleCloseSnackbar = () => {
@@ -199,47 +226,47 @@ function NotesPage({ colorMode }) {
             </Tooltip>
           </Box>
           <Box sx={{ padding: 1 }}>
-          <TextField
-            label="Search Notes"
-            variant="outlined"
-            fullWidth
-            autoFocus={true}
-            value={keyword}
-            color="secondary"
-            margin='none'
-            onChange={(e) => setKeyword(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }} // Search on Enter key
-            InputProps={{
-              endAdornment: (
-                <IconButton color='secondary' onClick={handleSearch}>
-                  <SearchIcon />
-                </IconButton>
-              ),
-              style: { color: '#fff' }
-            }}
-            InputLabelProps={{
-              style: { color: '#fff' } // Customize the label color (optional)
-            }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                  borderColor: '#CCCCCC', // Default border color
+            <TextField
+              label="Search Notes"
+              variant="outlined"
+              fullWidth
+              autoFocus={true}
+              value={keyword}
+              color="secondary"
+              margin='none'
+              onChange={(e) => setKeyword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }} // Search on Enter key
+              InputProps={{
+                endAdornment: (
+                  <IconButton color='secondary' onClick={handleSearch}>
+                    <SearchIcon />
+                  </IconButton>
+                ),
+                style: { color: '#fff' }
+              }}
+              InputLabelProps={{
+                style: { color: '#fff' } // Customize the label color (optional)
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: '#CCCCCC', // Default border color
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#FFFFFF', // Border color when hovered
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#FFFFFF', // Border color when focused
+                  },
                 },
-                '&:hover fieldset': {
-                  borderColor: '#FFFFFF', // Border color when hovered
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#FFFFFF', // Border color when focused
-                },
-              },
-            }}
-          />
-        </Box>
+              }}
+            />
+          </Box>
           <Box sx={{
             flexGrow: 1,
             overflowY: 'auto',
             paddingBottom: 2,
-            height: 'calc(100% - 120px)',
+            height: 'calc(100% - 180px)',
             '&::-webkit-scrollbar': {
               display: 'none',
             },
@@ -278,7 +305,7 @@ function NotesPage({ colorMode }) {
       }}>
         {selectedNote ? (
           <>
-            <Box sx={{ marginBottom: 2, width: '100%', display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+            <Box sx={{ marginBottom: 2, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems:"center", gap: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Tooltip title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}>
                   <IconButton onClick={handleToggleFullscreen}>
@@ -305,6 +332,37 @@ function NotesPage({ colorMode }) {
                     <DownloadIcon />
                   </IconButton>
                 </Tooltip>
+              </Box>
+              <Box>
+                {noteHistory.length > 0 && (
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <HistoryIcon sx={{ marginRight: 1, color:"#FFD700" }} /> {/* Adjust color and margin as needed */}
+                    <Slider
+                      value={historyIndex}
+                      onChange={handleSliderChange}
+                      step={1}
+                      marks
+                      min={0}
+                      max={noteHistory.length - 1}
+                      valueLabelDisplay="auto"
+                      valueLabelFormat={(value) => {
+                        const date = new Date(noteHistory[value]?.updatedAt);
+                        const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+                        
+                        return formattedDate; // Return the formatted date
+                      }}
+                      sx={{
+                        width: 200,
+                        marginLeft: 2,
+                        '& .MuiSlider-valueLabel': {
+                          top: 40, // Adjust this value as per your design to move the label below the slider
+                          backgroundColor: 'transparent', // Optional: make the label background transparent
+                          color: '#999', // Optional: change the label text color
+                        },
+                      }}
+                    />
+                  </Box>
+                )}
               </Box>
               <Box>
                 <Tooltip title="Logout">
