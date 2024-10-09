@@ -81,7 +81,7 @@ CREATE TABLE `note_history` (
   `history_id` bigint NOT NULL AUTO_INCREMENT,
   `note_id` int NOT NULL,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `content` tinytext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`history_id`),
   KEY `note_id` (`note_id`),
