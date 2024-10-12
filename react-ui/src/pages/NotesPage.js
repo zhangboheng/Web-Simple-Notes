@@ -45,7 +45,9 @@ function NotesPage({ colorMode }) {
       const userId = JSON.parse(userInfo)[0].id;
       getNotesByUserId(userId)
         .then(response => {
-          setNotes(response.data);
+          const fetchedNotes = response.data;
+          const sortedNotes = [...fetchedNotes].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+          setNotes(sortedNotes);
         })
         .catch(error => console.error('Error fetching notes:', error));
     }
@@ -117,7 +119,9 @@ function NotesPage({ colorMode }) {
     createNote({ userId, ...newNote })
       .then(response => {
         const createdNote = response.data;
-        setNotes([...notes, response.data]);
+        const updatedNotes = [createdNote, ...notes];
+        const sortedNotes = [...updatedNotes].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        setNotes(sortedNotes);
         setSelectedNote(createdNote);
         setTitle(newNote.title);
         setMarkdownContent('');
@@ -126,9 +130,13 @@ function NotesPage({ colorMode }) {
   };
 
   const handleSearch = () => {
-    searchNotes(keyword.trim()) // Call the backend search API
+    const userInfo = localStorage.getItem('userInfo');
+    const userId = JSON.parse(userInfo)[0].id;
+    searchNotes(keyword.trim(), userId) // Call the backend search API
       .then(response => {
-        setNotes(response.data);
+        const searchedNotes = response.data;
+        const sortedNotes = [...searchedNotes].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        setNotes(sortedNotes);
       })
       .catch(error => console.error('Error searching notes:', error));
   };
@@ -139,7 +147,8 @@ function NotesPage({ colorMode }) {
         .then(response => {
           const updatedNote = response.data; // Get the updated note
           const updatedNotes = notes.map(note => (note.noteId === selectedNote.noteId ? response.data : note));
-          setNotes(updatedNotes); // Update the list of notes
+          const sortedNotes = [...updatedNotes].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+          setNotes(sortedNotes); // Update the list of notes
           setSelectedNote(updatedNote); // Set the updated note as selected
           setSnackbarOpen(true);
         })
@@ -354,6 +363,19 @@ function NotesPage({ colorMode }) {
                       sx={{
                         width: 200,
                         marginLeft: 2,
+                        color: theme.palette.mode === 'light' ? '#000' : '#fff',
+                        '& .MuiSlider-thumb': {
+                          color: theme.palette.mode === 'light' ? '#000' : '#fff',
+                        },
+                        '& .MuiSlider-track': {
+                          color: theme.palette.mode === 'light' ? '#000' : '#fff',
+                        },
+                        '& .MuiSlider-rail': {
+                          color: theme.palette.mode === 'light' ? '#ccc' : '#fff',
+                        },
+                        '& .MuiSlider-mark': {
+                          backgroundColor: theme.palette.mode === 'light' ? '#ccc' : '#fff',
+                        },
                         '& .MuiSlider-valueLabel': {
                           top: 40, // Adjust this value as per your design to move the label below the slider
                           backgroundColor: 'transparent', // Optional: make the label background transparent

@@ -41,7 +41,7 @@ public class NoteService {
 
     // Get all notes for a specific user
     public List<Note> getNotesByUserId(Long userId) {
-        return noteRepository.findByUserId(userId);
+        return noteRepository.findByUserIdOrderByUpdatedAtDesc(userId);
     }
     // Get specific note by id
     public Optional<Note> getNoteById(Integer noteId) {
@@ -74,8 +74,8 @@ public class NoteService {
         noteRepository.deleteById(noteId);
     }
 
-    public List<Note> searchNotesByKeyword(String keyword) {
-        return noteRepository.findByTitleContainingOrContentContaining(keyword, keyword);
+    public List<Note> searchNotesByKeyword(String keyword, Long userId) {
+        return noteRepository.findByUserIdAndTitleContainingOrUserIdAndContentContainingOrderByUpdatedAtDesc(userId, keyword, userId, keyword);
     }
 }
 

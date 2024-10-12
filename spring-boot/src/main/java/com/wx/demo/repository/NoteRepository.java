@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface NoteRepository extends JpaRepository<Note, Integer> {
-    List<Note> findByUser(ManagerUser user);    
-    List<Note> findByUserId(Long userId);
-    List<Note> findByTitleContainingOrContentContaining(String titleKeyword, String contentKeyword);
+    List<Note> findByUserOrderByUpdatedAtDesc(ManagerUser user);    
+    List<Note> findByUserIdOrderByUpdatedAtDesc(Long userId);
+    List<Note> findByUserIdAndTitleContainingOrUserIdAndContentContainingOrderByUpdatedAtDesc(Long userId1, String titleKeyword, Long userId2, String contentKeyword);
 }

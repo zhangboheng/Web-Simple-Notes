@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { login } from '../services/auth';
+import React, { useState, useEffect } from 'react';
+import { login, getCaptchaImage } from '../services/auth';
 import {
   Box,
   Button,
@@ -8,23 +8,44 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import Grow from '@mui/material/Grow';
 import { useNavigate } from 'react-router-dom';
 import backgroundImage from '../assets/images/signup.jpg';
 
+
 function Login() {
   const [loginNum, setUsernum] = useState('');
   const [loginPwd, setPassword] = useState('');
+  const [captchaInput, setCaptchaInput] = useState('');
+  const [captchaImage, setCaptchaImage] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('success');
   const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
 
+  const fetchCaptcha = async () => {
+    try {
+      const response = await getCaptchaImage();
+      setCaptchaImage(`data:image/jpeg;base64,${response.data.captchaImage}`);
+    } catch (error) {
+      console.error('Error fetching captcha:', error);
+      setAlertMessage('Error fetching captcha. Please try again.');
+      setAlertSeverity('error');
+      setOpen(true);
+    }
+  };
+
+  useEffect(() => {
+    fetchCaptcha();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await login({ loginNum, loginPwd });
+      const response = await login({ loginNum, loginPwd, captcha: captchaInput });
       if (response.data.message) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('userInfo', JSON.stringify([response.data.userInfo]));
@@ -38,11 +59,14 @@ function Login() {
         setAlertMessage(response.data.showTips || 'Login failed');
         setAlertSeverity('warning');
         setOpen(true);
+        fetchCaptcha();
       }
     } catch (error) {
-      setAlertMessage('Oops, something went wrong');
+      let tips = JSON.parse(error.request.response).showTips
+      setAlertMessage(tips);
       setAlertSeverity('error');
       setOpen(true);
+      fetchCaptcha();
     }
   };
 
@@ -103,6 +127,28 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+            <TextField
+              label="Captcha"
+              variant="outlined"
+              margin="normal"
+              value={captchaInput}
+              onChange={(e) => setCaptchaInput(e.target.value)}
+              required
+              sx={{ width: '150px', marginRight: 2, marginTop: 1 }}
+              InputProps={{
+                sx: { 
+                  height: '50px',
+                 },
+              }}
+            />
+            {captchaImage && (
+              <img src={captchaImage} alt="Captcha" style={{ marginRight: 8, height: 50, border: '1px solid #ccc' }} />
+            )}
+            <IconButton onClick={fetchCaptcha}>
+              <RefreshIcon />
+            </IconButton>
+          </Box>
           <Box
             sx={{
               display: 'flex',
@@ -111,16 +157,16 @@ function Login() {
               mt: 2,
             }}
           >
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            size="large"
-            sx={{ flex: 1 }}
-          >
-            Login
-          </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              size="large"
+              sx={{ flex: 1 }}
+            >
+              Login
+            </Button>
             <Button
               variant="outlined"
               color="primary"

@@ -51,7 +51,7 @@ public class NoteController {
 
     // Search notes by title or content
     @GetMapping("/search")
-    public List<Note> searchNotes(@RequestParam String keyword) {
-        return noteService.searchNotesByKeyword(keyword);
+    public List<Note> searchNotes(@RequestParam String keyword, @RequestParam Long userId) {
+        return noteService.searchNotesByKeyword(keyword, userId);
     }
 }
