@@ -41,7 +41,7 @@ public class WebSecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/login", "/captchaImage", "/register", "/notes/**", "/noteHistory/**", "/css/**", "/js/**").permitAll()
+                .requestMatchers("/login", "/captchaImage", "/register", "/notes/**", "/noteHistory/**", "/swagger-ui/**", "/v3/**", "/css/**", "/js/**").permitAll()
                 .anyRequest().authenticated()
             ).userDetailsService(userDetailsService).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
