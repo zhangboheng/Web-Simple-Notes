@@ -14,7 +14,7 @@ export const updateNote = (noteId, data) => api.put(`/notes/${noteId}`, data);
 
 export const deleteNote = (noteId) => api.delete(`/notes/${noteId}`);
 
-export const searchNotes = (query) => api.get(`/notes/search?keyword=${query}`);
+export const searchNotes = (query, userId) => api.get(`/notes/search?keyword=${query}&userId=${userId}`);
 
 export const getNoteHistory = (noteId) => api.get(`/noteHistory/${noteId}`);
 
